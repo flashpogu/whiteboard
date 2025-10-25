@@ -215,7 +215,7 @@ export default function AutoDraw() {
     <div className="flex flex-col gap-3">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold">AutoDraw (Heuristic, Realtime + Sync)</h1>
+          <h1 className="text-2xl font-semibold">WhiteBoard</h1>
           <RoomBadge roomId={roomId} />
         </div>
         <div className="flex items-center gap-3 text-sm">
