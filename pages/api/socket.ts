@@ -19,7 +19,9 @@ type RoomState = { strokes: Stroke[] }
 
 const rooms = new Map<string, RoomState>()
 
-export default function handler(req: NextApiRequest, res: NextApiResponseServerIO) {
+import type { NextApiResponse } from 'next'
+
+export default function handler(req: NextApiRequest, res: NextApiResponse & NextApiResponseServerIO) {
   if (!res.socket.server.io) {
     const io = new Server(res.socket.server, {
       path: "/api/socket",
@@ -54,7 +56,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponseServerI
         socket.to(room).emit("stroke_start", { id: socket.id, stroke })
       })
 
-      socket.on("stroke_append", ({ room, point }) => {
+      socket.on("stroke_append", ({ point }) => {
         if (!roomId) return
         const state = rooms.get(roomId); if (!state) return
         const last = state.strokes[state.strokes.length - 1]
@@ -62,18 +64,18 @@ export default function handler(req: NextApiRequest, res: NextApiResponseServerI
         socket.to(roomId).emit("stroke_append", { id: socket.id, point })
       })
 
-      socket.on("stroke_end", ({ room }) => {
+      socket.on("stroke_end", () => {
         if (!roomId) return
         socket.to(roomId).emit("stroke_end", { id: socket.id })
       })
 
-      socket.on("clear", ({ room }) => {
+      socket.on("clear", () => {
         if (!roomId) return
         const state = rooms.get(roomId); if (state) state.strokes = []
         io.to(roomId).emit("clear")
       })
 
-      socket.on("undo", ({ room }) => {
+      socket.on("undo", () => {
         if (!roomId) return
         const state = rooms.get(roomId); if (!state) return
         state.strokes.pop()
@@ -85,7 +87,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponseServerI
       })
     })
 
-    res.socket.server.io = io
+  res.end()
   }
   res.end()
 }
