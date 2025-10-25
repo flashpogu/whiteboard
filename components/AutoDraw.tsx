@@ -101,7 +101,7 @@ export default function AutoDraw() {
       const s = io({ path: '/api/socket' })
       if (!active) return
       setSocket(s)
-      s.on('connect', () => { setSelfId(s.id); s.emit('join_room', { room: roomId }) })
+      s.on('connect', () => { setSelfId(s.id ?? ''); s.emit('join_room', { room: roomId }) })
 
       const remoteCurrent: Record<string, Stroke | null> = {}
 
