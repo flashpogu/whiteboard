@@ -101,7 +101,7 @@ export default function AutoDraw() {
       const s = io({ path: '/api/socket' })
       if (!active) return
       setSocket(s)
-      s.on('connect', () => { setSelfId(s.id ?? ''); s.emit('join_room', { room: roomId }) })
+      s.on('connect', () => { setSelfId(s.id); s.emit('join_room', { room: roomId }) })
 
       const remoteCurrent: Record<string, Stroke | null> = {}
 
@@ -215,7 +215,7 @@ export default function AutoDraw() {
     <div className="flex flex-col gap-3">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-semibold">WhiteBoard</h1>
+          <h1 className="text-lg font-semibold">AutoDraw (Heuristic, Realtime + Sync)</h1>
           <RoomBadge roomId={roomId} />
         </div>
         <div className="flex items-center gap-3 text-sm">
@@ -269,28 +269,14 @@ export default function AutoDraw() {
             onPointerCancel={handlePointerUp}
             className="touch-none cursor-crosshair w-full h-full block"
           />
-          {/* Cache canvas size in state and use it for remote cursors */}
           {Object.values(remoteCursors).map((c) => {
-            // Use container size instead of accessing ref during render
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const [canvasSize, setCanvasSize] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            useEffect(() => {
-              const el = canvasRef.current;
-              if (el) {
-                const rect = el.getBoundingClientRect();
-                setCanvasSize({ width: rect.width, height: rect.height });
-              }
-            }, []);
-            const pos = canvasSize.width && canvasSize.height
-              ? { x: c.nx * canvasSize.width, y: c.ny * canvasSize.height }
-              : null;
-            if (!pos) return null;
+            const pos = denormalToPixels(c, canvasRef.current)
+            if (!pos) return null
             return (
               <div key={c.id} className="absolute pointer-events-none" style={{ left: pos.x - 4, top: pos.y - 4 }}>
                 <div className="w-3 h-3 rounded-full" style={{ background: c.color }} />
               </div>
-            );
+            )
           })}
         </div>
       </div>
